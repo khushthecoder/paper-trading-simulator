@@ -1,104 +1,170 @@
 const axios = require('axios');
-const YahooFinance = require('yahoo-finance2').default;
-const yahooFinance = new YahooFinance({ suppressNotices: ['yahooSurvey'] });
+const NodeCache = require("node-cache");
+const myCache = new NodeCache({ stdTTL: 60 });
 
 const priceCache = {};
 const CACHE_DURATION = 10000;
+const BASE_URL = 'https://finnhub.io/api/v1';
+const API_KEY = process.env.FINNHUB_API_KEY;
+
 class MarketDataService {
+
     static async getRealTimePrice(symbol) {
         if (!symbol) throw new Error("Symbol is required");
-        const uppercaseSymbol = symbol.toUpperCase();
+        const upperSymbol = symbol.toUpperCase();
 
-        if (priceCache[uppercaseSymbol] && (Date.now() - priceCache[uppercaseSymbol].timestamp < CACHE_DURATION)) {
-            return priceCache[uppercaseSymbol].price;
+        if (priceCache[upperSymbol] && (Date.now() - priceCache[upperSymbol].timestamp < CACHE_DURATION)) {
+            return priceCache[upperSymbol].price;
         }
 
         try {
-            if (process.env.FINNHUB_API_KEY) {
-                const response = await axios.get(`https://finnhub.io/api/v1/quote?symbol=${uppercaseSymbol}&token=${process.env.FINNHUB_API_KEY}`);
-                if (response.data && response.data.c) {
-                    const price = Number(response.data.c);
-                    priceCache[uppercaseSymbol] = { price, timestamp: Date.now() };
-                    return price;
-                }
-            }
-        } catch (error) {
-            console.warn(`Finnhub failed for ${uppercaseSymbol}: ${error.message}. Falling back to Yahoo.`);
-        }
-        try {
-            const quote = await yahooFinance.quote(uppercaseSymbol);
-            const price = quote.regularMarketPrice;
-            if (price === undefined) throw new Error("Price not found");
+            const response = await axios.get(`${BASE_URL}/quote?symbol=${upperSymbol}&token=${API_KEY}`);
+            const price = Number(response.data.c); 
 
-            priceCache[uppercaseSymbol] = { price, timestamp: Date.now() };
+            if (!price) throw new Error("Price not found");
+
+            priceCache[upperSymbol] = { price, timestamp: Date.now() };
             return price;
         } catch (error) {
-            console.error(`Yahoo Finance failed for ${uppercaseSymbol}: ${error.message}`);
-            throw new Error(`Could not fetch price for ${uppercaseSymbol}`);
+            console.error(`Finnhub quote failed for ${upperSymbol}: ${error.message}`);
+            throw error;
         }
     }
 
-    static async getChartData(symbol, range = '1mo') {
-        const uppercaseSymbol = symbol.toUpperCase();
-        const intervalMap = {
-            '1d': '5m',
-            '5d': '15m',
-            '1mo': '1d',
-            '6mo': '1d',
-            '1y': '1wk',
-            'ytd': '1d',
-            'max': '1mo'
-        };
-        const interval = intervalMap[range] || '1d';
+    static async getChartData(symbol, resolution = 'D') {
+        const upperSymbol = symbol.toUpperCase();
 
-        const endDate = new Date();
-        const startDate = new Date();
 
-        switch (range) {
-            case '1d': startDate.setDate(endDate.getDate() - 1); break;
-            case '5d': startDate.setDate(endDate.getDate() - 5); break;
-            case '1mo': startDate.setMonth(endDate.getMonth() - 1); break;
-            case '6mo': startDate.setMonth(endDate.getMonth() - 6); break;
-            case '1y': startDate.setFullYear(endDate.getFullYear() - 1); break;
-            case 'ytd': startDate.setMonth(0, 1); break;
-            default: startDate.setMonth(endDate.getMonth() - 1);
+        let res = 'D';
+        let from = Math.floor(Date.now() / 1000); // Now
+        const to = Math.floor(Date.now() / 1000);
+
+
+
+        const oneDay = 24 * 60 * 60;
+        if (typeof resolution === 'string') {
+            if (resolution === '1d') { res = '60'; from -= oneDay; }
+            else if (resolution === '1w') { res = 'D'; from -= oneDay * 7; }
+            else if (resolution === '1mo') { res = 'D'; from -= oneDay * 30; }
+            else if (resolution === '1y') { res = 'W'; from -= oneDay * 365; }
+            else { res = 'D'; from -= oneDay * 30; } 
         }
 
         try {
-            const result = await yahooFinance.historical(uppercaseSymbol, {
-                period1: startDate,
-                interval: interval
+            const response = await axios.get(`${BASE_URL}/stock/candle`, {
+                params: {
+                    symbol: upperSymbol,
+                    resolution: res,
+                    from: from,
+                    to: to,
+                    token: API_KEY
+                }
             });
-            return result.map(candle => ({
-                time: candle.date.toISOString().split('T')[0],
-                open: candle.open,
-                high: candle.high,
-                low: candle.low,
-                close: candle.close,
-                volume: candle.volume
-            }));
 
+            if (response.data && response.data.s === 'ok') {
+
+                return response.data.t.map((timestamp, index) => ({
+                    time: new Date(timestamp * 1000).toISOString(),
+                    open: response.data.o[index],
+                    high: response.data.h[index],
+                    low: response.data.l[index],
+                    close: response.data.c[index],
+                    volume: response.data.v[index]
+                }));
+            }
+            return [];
         } catch (error) {
-            console.error(`Chart data failed for ${uppercaseSymbol}: ${error.message}`);
-            throw error;
+            console.error(`Finnhub candle failed: ${error.message}`);
+            return [];
         }
     }
 
     static async searchSymbol(query) {
         if (!query) return [];
         try {
-            const result = await yahooFinance.search(query);
-            return result.quotes
-                .filter(q => q.isYahooFinance !== false)
-                .map(q => ({
-                    symbol: q.symbol,
-                    description: q.shortname || q.longname || q.symbol,
-                    type: q.quoteType,
-                    exchange: q.exchange
+            const response = await axios.get(`${BASE_URL}/search?q=${query}&token=${API_KEY}`);
+
+            return response.data.result
+                .filter(item => !item.symbol.includes('.')) 
+                .slice(0, 10)
+                .map(item => ({
+                    symbol: item.symbol,
+                    description: item.description,
+                    type: item.type,
+                    exchange: 'US' 
                 }));
         } catch (error) {
-            console.error(`Search failed: ${error.message}`);
+            console.error(`Finnhub search failed: ${error.message}`);
             return [];
+        }
+    }
+
+
+
+    static async getCompanyProfile(symbol) {
+        try {
+            const response = await axios.get(`${BASE_URL}/stock/profile2?symbol=${symbol}&token=${API_KEY}`);
+            return response.data;
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    static async getFinancials(symbol) {
+        try {
+
+            const response = await axios.get(`${BASE_URL}/stock/metric?symbol=${symbol}&metric=all&token=${API_KEY}`);
+            return response.data; 
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    static async getMarketNews(category = 'general') {
+        try {
+            const response = await axios.get(`${BASE_URL}/news?category=${category}&token=${API_KEY}`);
+            return response.data.slice(0, 20); 
+        } catch (error) {
+            console.error(error);
+            return [];
+        }
+    }
+
+    static async getCompanyNews(symbol) {
+        try {
+            const from = new Date();
+            from.setDate(from.getDate() - 7);
+            const to = new Date();
+            const fromStr = from.toISOString().split('T')[0];
+            const toStr = to.toISOString().split('T')[0];
+
+            const response = await axios.get(`${BASE_URL}/company-news?symbol=${symbol}&from=${fromStr}&to=${toStr}&token=${API_KEY}`);
+            return response.data.slice(0, 10);
+        } catch (error) {
+            console.error(error);
+            return [];
+        }
+    }
+
+    static async getRecommendations(symbol) {
+        try {
+            const response = await axios.get(`${BASE_URL}/stock/recommendation?symbol=${symbol}&token=${API_KEY}`);
+            return response.data; 
+        } catch (error) {
+            console.error(error);
+            return [];
+        }
+    }
+
+    static async getSentiment(symbol) {
+
+        try {
+            const response = await axios.get(`${BASE_URL}/stock/insider-sentiment?symbol=${symbol}&from=2024-01-01&token=${API_KEY}`);
+            return response.data;
+        } catch (error) {
+            return null;
         }
     }
 }

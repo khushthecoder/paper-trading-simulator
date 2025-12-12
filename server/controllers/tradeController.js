@@ -3,9 +3,6 @@ const Portfolio = require('../models/Portfolio');
 const User = require('../models/User');
 const MarketDataService = require('../services/marketData');
 
-// @desc    Buy stock
-// @route   POST /api/trade/buy
-// @access  Private
 exports.buyStock = async (req, res) => {
     try {
         const { symbol, quantity } = req.body;
@@ -23,7 +20,6 @@ exports.buyStock = async (req, res) => {
             return res.status(400).json({ message: 'Insufficient funds' });
         }
 
-        // Deduct balance
         user.balance -= cost;
         await user.save();
 
@@ -34,13 +30,12 @@ exports.buyStock = async (req, res) => {
             quantity: qty,
             price: price,
             type: 'BUY',
+            totalAmount: cost,
         });
 
-        // Update Portfolio
         let portfolioItem = await Portfolio.findOne({ user: req.user._id, symbol: symbol.toUpperCase() });
 
         if (portfolioItem) {
-            // Calculate new average price
             const totalCost = (portfolioItem.quantity * portfolioItem.avgPrice) + cost;
             const newQuantity = portfolioItem.quantity + qty;
             portfolioItem.avgPrice = totalCost / newQuantity;
@@ -63,9 +58,6 @@ exports.buyStock = async (req, res) => {
     }
 };
 
-// @desc    Sell stock
-// @route   POST /api/trade/sell
-// @access  Private
 exports.sellStock = async (req, res) => {
     try {
         const { symbol, quantity } = req.body;
@@ -85,20 +77,18 @@ exports.sellStock = async (req, res) => {
         const gain = price * qty;
         const user = await User.findById(req.user._id);
 
-        // Add balance
         user.balance += gain;
         await user.save();
 
-        // Create transaction
         await Transaction.create({
             user: req.user._id,
             symbol: symbol.toUpperCase(),
             quantity: qty,
             price: price,
             type: 'SELL',
+            totalAmount: gain,
         });
 
-        // Update Portfolio
         portfolioItem.quantity -= qty;
         if (portfolioItem.quantity === 0) {
             await Portfolio.deleteOne({ _id: portfolioItem._id });
@@ -114,9 +104,6 @@ exports.sellStock = async (req, res) => {
     }
 };
 
-// @desc    Get transactions
-// @route   GET /api/trade/transactions
-// @access  Private
 exports.getTransactions = async (req, res) => {
     try {
         const transactions = await Transaction.find({ user: req.user._id }).sort({ date: -1 });
@@ -127,9 +114,6 @@ exports.getTransactions = async (req, res) => {
     }
 };
 
-// @desc    Get portfolio
-// @route   GET /api/trade/portfolio
-// @access  Private
 exports.getPortfolio = async (req, res) => {
     try {
         const portfolio = await Portfolio.find({ user: req.user._id });
@@ -161,9 +145,6 @@ exports.getPortfolio = async (req, res) => {
     }
 };
 
-// @desc    Search symbol
-// @route   GET /api/trade/search/:query
-// @access  Private
 exports.searchSymbol = async (req, res) => {
     try {
         const { query } = req.params;
@@ -189,9 +170,73 @@ exports.getPrice = async (req, res) => {
 exports.getCandles = async (req, res) => {
     try {
         const { symbol } = req.params;
-        const { range } = req.query; // '1d', '1mo', etc.
+        const { range } = req.query;
         const candles = await MarketDataService.getChartData(symbol, range);
         res.status(200).json(candles);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+exports.getIndices = async (req, res) => {
+    try {
+        const indices = await MarketDataService.getIndices();
+        res.status(200).json(indices);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+exports.getCompanyProfile = async (req, res) => {
+    try {
+        const { symbol } = req.params;
+        const profile = await MarketDataService.getCompanyProfile(symbol);
+        res.status(200).json(profile);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+exports.getFinancials = async (req, res) => {
+    try {
+        const { symbol } = req.params;
+        const data = await MarketDataService.getFinancials(symbol);
+        res.status(200).json(data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+exports.getNews = async (req, res) => {
+    try {
+        const { symbol } = req.params;
+        const news = await MarketDataService.getCompanyNews(symbol);
+        res.status(200).json(news);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+exports.getMarketNews = async (req, res) => {
+    try {
+        const news = await MarketDataService.getMarketNews();
+        res.status(200).json(news);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+exports.getRecommendations = async (req, res) => {
+    try {
+        const { symbol } = req.params;
+        const recs = await MarketDataService.getRecommendations(symbol);
+        res.status(200).json(recs);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });

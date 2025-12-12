@@ -1,12 +1,9 @@
-// Node 18+ has native fetch
-
 const BASE_URL = 'http://localhost:5001/api';
 
 const log = (msg) => console.log(`[TEST] ${msg}`);
 
 async function run() {
     try {
-        // 1. Register User
         const randomId = Math.floor(Math.random() * 10000);
         const userData = {
             username: `testuser${randomId}`,
@@ -26,7 +23,6 @@ async function run() {
         const token = user.token;
         log(`User registered. Token: ${token.substring(0, 10)}... Balance: ${user.balance}`);
 
-        // 2. Buy Stock
         log('Buying 10 RELIANCE...');
         const buyRes = await fetch(`${BASE_URL}/trade/buy`, {
             method: 'POST',
@@ -41,7 +37,6 @@ async function run() {
         const buyData = await buyRes.json();
         log(`Buy successful. Tx ID: ${buyData.transaction._id}`);
 
-        // 3. Sell Stock
         log('Selling 5 RELIANCE...');
         const sellRes = await fetch(`${BASE_URL}/trade/sell`, {
             method: 'POST',
@@ -56,7 +51,6 @@ async function run() {
         const sellData = await sellRes.json();
         log(`Sell successful. Tx ID: ${sellData.transaction._id}`);
 
-        // 4. Get Portfolio
         log('Fetching Portfolio...');
         const portRes = await fetch(`${BASE_URL}/trade/portfolio`, {
             method: 'GET',
@@ -77,7 +71,6 @@ async function run() {
             console.error('FAIL: Portfolio quantity incorrect.');
         }
 
-        // 5. Get Transactions
         log('Fetching Transactions...');
         const txRes = await fetch(`${BASE_URL}/trade/transactions`, {
             method: 'GET',
@@ -98,7 +91,6 @@ async function run() {
     }
 }
 
-// Check if fetch is available (Node 18+)
 if (!globalThis.fetch) {
     console.error("This script requires Node.js v18+ or 'node-fetch' package.");
     process.exit(1);

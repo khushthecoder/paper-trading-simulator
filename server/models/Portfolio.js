@@ -22,7 +22,6 @@ const portfolioSchema = new mongoose.Schema({
     },
 });
 
-// Ensure a user has only one entry per stock symbol
 portfolioSchema.index({ user: 1, symbol: 1 }, { unique: true });
 
 module.exports = mongoose.model('Portfolio', portfolioSchema);
