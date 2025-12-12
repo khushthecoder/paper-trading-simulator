@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { buyStock, sellStock, getPortfolio, getTransactions, searchSymbol, getPrice } = require('../controllers/tradeController');
+const { buyStock, sellStock, getPortfolio, getTransactions, searchSymbol, getPrice, getCandles } = require('../controllers/tradeController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.post('/buy', protect, buyStock);
@@ -9,5 +9,6 @@ router.get('/transactions', protect, getTransactions);
 router.get('/portfolio', protect, getPortfolio);
 router.get('/search/:query', protect, searchSymbol);
 router.get('/price/:symbol', protect, getPrice);
+router.get('/candles/:symbol', protect, getCandles);
 
 module.exports = router;

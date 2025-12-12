@@ -27,7 +27,7 @@ exports.buyStock = async (req, res) => {
         user.balance -= cost;
         await user.save();
 
-        // Create transaction
+
         await Transaction.create({
             user: req.user._id,
             symbol: symbol.toUpperCase(),
@@ -180,6 +180,18 @@ exports.getPrice = async (req, res) => {
         const { symbol } = req.params;
         const price = await MarketDataService.getRealTimePrice(symbol);
         res.status(200).json({ symbol: symbol.toUpperCase(), price });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+exports.getCandles = async (req, res) => {
+    try {
+        const { symbol } = req.params;
+        const { range } = req.query; // '1d', '1mo', etc.
+        const candles = await MarketDataService.getChartData(symbol, range);
+        res.status(200).json(candles);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });

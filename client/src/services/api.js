@@ -16,9 +16,9 @@ api.interceptors.request.use((config) => {
 export const buyStock = (data) => api.post('/trade/buy', data);
 export const sellStock = (data) => api.post('/trade/sell', data);
 export const getPortfolio = () => api.get('/trade/portfolio');
-export const getTransactions = () => api.get('/trade/transactions');
-export const searchSymbol = (query) => api.get(`/trade/search/${query}`);
 export const getStockPrice = (symbol) => api.get(`/trade/price/${symbol}`);
+export const getStockCandles = (symbol, range) => api.get(`/trade/candles/${symbol}?range=${range}`);
+export const searchSymbol = (query) => api.get(`/trade/search/${query}`);
 export const registerUser = (data) => api.post('/auth/register', data);
 export const loginUser = (data) => api.post('/auth/login', data);
 
