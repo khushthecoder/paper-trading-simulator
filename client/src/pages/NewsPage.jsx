@@ -22,10 +22,10 @@ const NewsPage = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#131722] pb-20 text-gray-300 font-sans">
+        <div className="min-h-screen bg-background pb-20 text-text font-sans">
             <Navbar />
             <div className="max-w-[1000px] mx-auto px-6 py-8">
-                <h1 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-text mb-8 flex items-center gap-3">
                     <Globe className="w-8 h-8 text-blue-500" /> Global Market News
                 </h1>
 
@@ -36,12 +36,12 @@ const NewsPage = () => {
                 ) : (
                     <div className="grid gap-6">
                         {news.map((item) => (
-                            <a 
-                                key={item.id} 
-                                href={item.url} 
-                                target="_blank" 
+                            <a
+                                key={item.id}
+                                href={item.url}
+                                target="_blank"
                                 rel="noopener noreferrer"
-                                className="block bg-[#1E222D] border border-[#2A2E39] rounded-xl overflow-hidden hover:border-gray-500 transition-all group"
+                                className="block bg-surface border border-border rounded-xl overflow-hidden hover:border-muted transition-all group"
                             >
                                 <div className="flex flex-col md:flex-row">
                                     {item.image && (
@@ -54,9 +54,9 @@ const NewsPage = () => {
                                             <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-2">
                                                 {item.summary}
                                             </div>
-                                            <h2 className="text-xl font-bold text-white mb-3 group-hover:text-primary transition-colors">{item.headline}</h2>
+                                            <h2 className="text-xl font-bold text-text mb-3 group-hover:text-primary transition-colors">{item.headline}</h2>
                                         </div>
-                                        <div className="flex items-center gap-2 text-gray-500 text-sm mt-4">
+                                        <div className="flex items-center gap-2 text-muted text-sm mt-4">
                                             <Clock className="w-4 h-4" />
                                             {new Date(item.datetime).toLocaleString()}
                                         </div>

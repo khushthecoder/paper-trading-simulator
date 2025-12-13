@@ -65,7 +65,7 @@ const Dashboard = () => {
     const StockRow = ({ title, icon: Icon, data, color }) => (
         <section className="mb-8">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-text flex items-center gap-2">
                     <Icon className={`w-5 h-5 ${color}`} /> {title}
                 </h2>
             </div>
@@ -73,24 +73,24 @@ const Dashboard = () => {
                 {data.length > 0 ? data.map((stock, i) => (
                     <StockCard key={i} {...stock} />
                 )) : (
-                    <div className="text-gray-500 text-sm">Loading market data...</div>
+                    <div className="text-muted text-sm">Loading market data...</div>
                 )}
             </div>
         </section>
     );
 
     return (
-        <div className="min-h-screen bg-[#131722] pb-20 text-gray-300 font-sans">
+        <div className="min-h-screen bg-background pb-20 text-muted font-sans transition-colors duration-200">
             <Navbar />
 
             <div className="max-w-[1400px] mx-auto px-6 py-8">
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     {indices.map((idx, i) => (
-                        <a href={`/stock/${idx.symbol}`} key={i} className="bg-[#1E222D] border border-[#2A2E39] p-5 rounded-xl flex justify-between items-center hover:border-gray-600 transition-colors cursor-pointer group">
+                        <a href={`/stock/${idx.symbol}`} key={i} className="bg-surface border border-border p-5 rounded-xl flex justify-between items-center hover:border-gray-500 transition-colors cursor-pointer group">
                             <div>
-                                <h3 className="text-sm text-gray-400 font-medium mb-1 group-hover:text-primary transition-colors">{idx.name}</h3>
-                                <p className="text-xl font-bold text-white">{idx.price?.toFixed(2)}</p>
+                                <h3 className="text-sm text-muted font-medium mb-1 group-hover:text-primary transition-colors">{idx.name}</h3>
+                                <p className="text-xl font-bold text-text">{idx.price?.toFixed(2)}</p>
                             </div>
                             <div className={`px-2 py-1 rounded text-sm font-bold ${idx.changePercent < 0 ? 'text-accent bg-accent/10' : 'text-primary bg-primary/10'}`}>
                                 {idx.changePercent > 0 ? '+' : ''}{idx.changePercent?.toFixed(2)}%
@@ -102,17 +102,17 @@ const Dashboard = () => {
                 <div className="grid grid-cols-12 gap-8">
                     <div className="col-span-12 lg:col-span-8 space-y-2">
 
-                        <div className="bg-gradient-to-r from-[#1E222D] to-[#202A36] border border-[#2A2E39] rounded-xl p-8 flex justify-between items-center shadow-lg relative overflow-hidden mb-8">
+                        <div className="bg-gradient-to-r from-surface to-background border border-border rounded-xl p-8 flex justify-between items-center shadow-lg relative overflow-hidden mb-8">
                             <div className="relative z-10">
-                                <p className="text-gray-400 mb-2 font-medium flex items-center gap-2"><BriefcaseIcon className="w-4 h-4" /> Total Portfolio Value</p>
-                                <h1 className="text-4xl font-bold text-white mb-2">${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h1>
+                                <p className="text-muted mb-2 font-medium flex items-center gap-2"><BriefcaseIcon className="w-4 h-4" /> Total Portfolio Value</p>
+                                <h1 className="text-4xl font-bold text-text mb-2">${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h1>
                                 <p className="text-primary text-sm font-medium flex items-center gap-1">
                                     <TrendingUp className="w-4 h-4" /> +$1,240.50 (Today)
                                 </p>
                             </div>
                             <div className="text-right relative z-10">
-                                <p className="text-gray-400 mb-1 text-sm font-medium">Buying Power</p>
-                                <p className="text-xl font-semibold text-white">${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                                <p className="text-muted mb-1 text-sm font-medium">Buying Power</p>
+                                <p className="text-xl font-semibold text-text">${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                                 <button className="mt-4 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-black font-bold text-sm transition-all">Deposit Funds</button>
                             </div>
                             <div className="absolute right-0 bottom-0 opacity-10">
@@ -124,63 +124,7 @@ const Dashboard = () => {
                         <StockRow title="Top Gainers" icon={TrendingUp} data={gainers} color="text-primary" />
                         <StockRow title="Top Losers" icon={ArrowUpRight} data={losers} color="text-accent" />
 
-                        <section className="bg-[#1E222D] border border-[#2A2E39] rounded-xl overflow-hidden mt-8">
-                            <div className="p-6 border-b border-[#2A2E39]">
-                                <h2 className="text-lg font-bold text-white">Your Holdings</h2>
-                            </div>
-                            <table className="w-full text-left">
-                                <thead className="bg-[#131722] text-xs uppercase text-gray-500 font-medium">
-                                    <tr>
-                                        <th className="px-6 py-4">Symbol</th>
-                                        <th className="px-6 py-4">Qty</th>
-                                        <th className="px-6 py-4">Avg Cost</th>
-                                        <th className="px-6 py-4">Current Price</th>
-                                        <th className="px-6 py-4">Market Value</th>
-                                        <th className="px-6 py-4 text-right">Return</th>
-                                        <th className="px-6 py-4 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-[#2A2E39]">
-                                    {portfolio.length > 0 ? portfolio.map((item) => (
-                                        <tr key={item.symbol} className="hover:bg-[#2A2E39]/50 transition-colors">
-                                            <td className="px-6 py-4 font-bold text-white">
-                                                <button
-                                                    onClick={() => window.location.href = `/stock/${item.symbol}`}
-                                                    className="hover:text-primary hover:underline text-left"
-                                                >
-                                                    {item.symbol}
-                                                </button>
-                                                {item.stopLossActive && (
-                                                    <span className="ml-2 px-1.5 py-0.5 text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 rounded">SL: ${item.stopLossPrice?.toFixed(2)}</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-300">{item.quantity}</td>
-                                            <td className="px-6 py-4 text-gray-400">${item.avgPrice.toFixed(2)}</td>
-                                            <td className="px-6 py-4 text-gray-300">${item.currentPrice.toFixed(2)}</td>
-                                            <td className="px-6 py-4 font-medium text-white">${item.currentValue.toFixed(2)}</td>
-                                            <td className={`px-6 py-4 text-right font-medium ${item.pnl >= 0 ? 'text-primary' : 'text-accent'}`}>
-                                                {item.pnl >= 0 ? '+' : ''}{item.pnl.toFixed(2)} ({item.pnlPercentage.toFixed(2)}%)
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button
-                                                    onClick={() => openStopLossModal(item)}
-                                                    className="p-2 bg-[#2A2E39] hover:bg-gray-700 text-gray-400 hover:text-white rounded-lg transition-colors"
-                                                    title="Set Stop Loss"
-                                                >
-                                                    <ShieldAlert className="w-4 h-4" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    )) : (
-                                        <tr>
-                                            <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
-                                                No holdings found. Start trading!
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </section>
+
                     </div>
 
                     <div className="col-span-12 lg:col-span-4 space-y-8">

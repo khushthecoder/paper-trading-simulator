@@ -119,22 +119,29 @@ exports.getPortfolio = async (req, res) => {
         const portfolio = await Portfolio.find({ user: req.user._id });
 
         const portfolioWithValues = await Promise.all(portfolio.map(async (item) => {
-            let currentPrice = 0;
+            let quoteData = { price: 0, change: 0, changePercent: 0 };
+            let sparklineData = [];
             try {
-                currentPrice = await MarketDataService.getRealTimePrice(item.symbol);
+                quoteData = await MarketDataService.getFullQuote(item.symbol);
+                sparklineData = await MarketDataService.getChartData(item.symbol, '1d');
             } catch (err) {
-                console.error(`Could not fetch price for ${item.symbol}`);
+                console.error(`Could not fetch data for ${item.symbol}`);
             }
+            const currentPrice = quoteData.price;
             const currentValue = currentPrice * item.quantity;
             const pnl = currentValue - (item.avgPrice * item.quantity);
             const pnlPercentage = item.avgPrice > 0 ? (pnl / (item.avgPrice * item.quantity)) * 100 : 0;
+            const dayChange = quoteData.change * item.quantity;
 
             return {
                 ...item.toObject(),
                 currentPrice,
                 currentValue,
                 pnl,
-                pnlPercentage
+                pnlPercentage,
+                dayChange,
+                dayChangePercent: quoteData.changePercent,
+                sparkline: sparklineData
             };
         }));
 
@@ -191,7 +198,7 @@ exports.getIndices = async (req, res) => {
 
 exports.getScreeners = async (req, res) => {
     try {
-        const { type } = req.query; 
+        const { type } = req.query;
         const screeners = await MarketDataService.getScreeners(type);
         res.status(200).json(screeners);
     } catch (error) {

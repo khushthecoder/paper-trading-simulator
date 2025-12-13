@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import api from '../services/api'; 
+import api from '../services/api';
 import StockCard from '../components/StockCard';
 import { TrendingUp, TrendingDown, Activity, Layers } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -33,24 +33,24 @@ const Markets = () => {
     }, []);
 
     const StockList = ({ title, icon: Icon, data, color }) => (
-        <section className="bg-[#1E222D] border border-[#2A2E39] rounded-xl overflow-hidden flex-1 min-w-[300px]">
-            <div className="p-4 border-b border-[#2A2E39] flex items-center gap-2">
+        <section className="bg-surface border border-border rounded-xl overflow-hidden flex-1 min-w-[300px]">
+            <div className="p-4 border-b border-border flex items-center gap-2">
                 <Icon className={`w-5 h-5 ${color}`} />
-                <h2 className="text-lg font-bold text-white">{title}</h2>
+                <h2 className="text-lg font-bold text-text">{title}</h2>
             </div>
-            <div className="divide-y divide-[#2A2E39] max-h-[500px] overflow-y-auto custom-scrollbar">
+            <div className="divide-y divide-border max-h-[500px] overflow-y-auto custom-scrollbar">
                 {data.map((stock) => (
-                    <div 
-                        key={stock.symbol} 
+                    <div
+                        key={stock.symbol}
                         onClick={() => navigate(`/stock/${stock.symbol}`)}
-                        className="p-4 flex justify-between items-center hover:bg-[#2A2E39]/50 cursor-pointer group"
+                        className="p-4 flex justify-between items-center hover:bg-background/50 cursor-pointer group"
                     >
                         <div>
-                            <h3 className="text-white font-bold group-hover:text-primary transition-colors">{stock.symbol}</h3>
-                            <p className="text-xs text-gray-500 truncate w-32">{stock.name}</p>
+                            <h3 className="text-text font-bold group-hover:text-primary transition-colors">{stock.symbol}</h3>
+                            <p className="text-xs text-muted truncate w-32">{stock.name}</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-white font-medium">${stock.price?.toFixed(2)}</p>
+                            <p className="text-text font-medium">${stock.price?.toFixed(2)}</p>
                             <p className={`text-xs font-bold ${stock.change >= 0 ? 'text-primary' : 'text-accent'}`}>
                                 {stock.change > 0 ? '+' : ''}{stock.changePercent?.toFixed(2)}%
                             </p>
@@ -62,13 +62,13 @@ const Markets = () => {
     );
 
     return (
-        <div className="min-h-screen bg-[#131722] pb-20 text-gray-300 font-sans">
+        <div className="min-h-screen bg-background pb-20 text-text font-sans">
             <Navbar />
             <div className="max-w-[1400px] mx-auto px-6 py-8">
-                <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-text mb-2 flex items-center gap-3">
                     <Layers className="w-8 h-8 text-secondary" /> Market Explorer
                 </h1>
-                <p className="text-gray-500 mb-8">Live overview of top performing and trending assets.</p>
+                <p className="text-muted mb-8">Live overview of top performing and trending assets.</p>
 
                 {loading ? (
                     <div className="flex justify-center py-20">

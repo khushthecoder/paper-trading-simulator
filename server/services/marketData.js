@@ -23,6 +23,36 @@ class MarketDataService {
         }
     }
 
+    static async getFullQuote(symbol) {
+        try {
+            const quote = await yahooFinance.quote(symbol);
+            return {
+                price: quote.regularMarketPrice,
+                change: quote.regularMarketChange,
+                changePercent: quote.regularMarketChangePercent,
+                previousClose: quote.regularMarketPreviousClose
+            };
+        } catch (error) {
+            if (!symbol.includes('.') && symbol.length > 2) {
+                try {
+                    const quoteNS = await yahooFinance.quote(symbol + '.NS');
+                    return {
+                        price: quoteNS.regularMarketPrice,
+                        change: quoteNS.regularMarketChange,
+                        changePercent: quoteNS.regularMarketChangePercent,
+                        previousClose: quoteNS.regularMarketPreviousClose
+                    };
+                } catch (e) { }
+            }
+            return {
+                price: this._getMockPrice(symbol),
+                change: 0,
+                changePercent: 0,
+                previousClose: 0
+            };
+        }
+    }
+
     static async getChartData(symbol, range = '1d') {
         let interval = '15m';
         let period1 = new Date();
@@ -34,7 +64,7 @@ class MarketDataService {
         else if (rangeUpper === '3MO' || rangeUpper === '3M') { interval = '1d'; period1.setDate(period1.getDate() - 90); }
         else if (rangeUpper === '6M') { interval = '1d'; period1.setDate(period1.getDate() - 180); }
         else if (rangeUpper === '1Y') { interval = '1wk'; period1.setDate(period1.getDate() - 365); }
-        else { interval = '1d'; period1.setDate(period1.getDate() - 30); } 
+        else { interval = '1d'; period1.setDate(period1.getDate() - 30); }
 
         const queryOptions = { period1: period1.toISOString().split('T')[0], interval: interval };
 
@@ -48,7 +78,7 @@ class MarketDataService {
                 low: q.low,
                 close: q.close,
                 volume: q.volume
-            })).filter(q => q.close !== null); 
+            })).filter(q => q.close !== null);
         };
 
         try {
