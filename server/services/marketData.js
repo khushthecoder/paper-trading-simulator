@@ -1,6 +1,6 @@
 const YahooFinance = require('yahoo-finance2').default;
 
-// Instantiate with options
+
 const yahooFinance = new YahooFinance({
     suppressNotices: ['yahooSurvey']
 });
@@ -12,7 +12,7 @@ class MarketDataService {
             const quote = await yahooFinance.quote(symbol);
             return quote.regularMarketPrice;
         } catch (error) {
-            // Try appending .NS if it looks like an Indian stock query that failed
+
             if (!symbol.includes('.') && symbol.length > 2) {
                 try {
                     const quoteNS = await yahooFinance.quote(symbol + '.NS');
@@ -34,7 +34,7 @@ class MarketDataService {
         else if (rangeUpper === '3MO' || rangeUpper === '3M') { interval = '1d'; period1.setDate(period1.getDate() - 90); }
         else if (rangeUpper === '6M') { interval = '1d'; period1.setDate(period1.getDate() - 180); }
         else if (rangeUpper === '1Y') { interval = '1wk'; period1.setDate(period1.getDate() - 365); }
-        else { interval = '1d'; period1.setDate(period1.getDate() - 30); } // Default to 1M
+        else { interval = '1d'; period1.setDate(period1.getDate() - 30); } 
 
         const queryOptions = { period1: period1.toISOString().split('T')[0], interval: interval };
 
@@ -48,13 +48,13 @@ class MarketDataService {
                 low: q.low,
                 close: q.close,
                 volume: q.volume
-            })).filter(q => q.close !== null); // Filter out empty candles
+            })).filter(q => q.close !== null); 
         };
 
         try {
             return await fetchChart(symbol);
         } catch (error) {
-            // Try .NS fallback for Indian stocks
+
             if (!symbol.includes('.') && symbol.length > 2) {
                 try { return await fetchChart(symbol + '.NS'); } catch (e) { }
             }
@@ -96,13 +96,11 @@ class MarketDataService {
 
     static async getScreeners(type = 'gainers') {
         try {
-            // Fallback lists if Yahoo screener fails (which is common without Premium API)
             if (type === 'losers') {
                 try {
                     const result = await yahooFinance.dailyLosers({ count: 20 });
                     if (result && result.quotes && result.quotes.length > 0) return this._mapQuotes(result.quotes);
                 } catch (e) { }
-                // Fallback to specific known losers/volatile stocks if API fails
                 return await this._fetchQuotes(['PFE', 'INTC', 'WBA', 'MMM', 'NKE', 'PYPL', 'VZ', 'T', 'GM', 'F']);
             }
 
@@ -117,7 +115,6 @@ class MarketDataService {
                 return await this._fetchQuotes(['AMD', 'NVDA', 'TSLA', 'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'NFLX', 'BRK-B']);
             }
 
-            // Default: Gainers
             try {
                 const result = await yahooFinance.dailyGainers({ count: 20 });
                 if (result && result.quotes && result.quotes.length > 0) return this._mapQuotes(result.quotes);
@@ -126,7 +123,6 @@ class MarketDataService {
 
         } catch (error) {
             console.error(`Screener [${type}] failed:`, error.message);
-            // Absolute final fallback to ensure UI is never empty
             return await this._fetchQuotes(['AAPL', 'TSLA', 'MSFT']);
         }
     }
@@ -236,15 +232,11 @@ class MarketDataService {
             return [];
         }
     }
-
-    // --- Mocks for Fallbacks ---
-
     static _getMockPrice(symbol) {
         return 100 + (Math.random() * 5);
     }
 
     static _getMockChart(symbol, range) {
-        // Generate different mock patterns based on range to simulate change
         const points = range === '1D' ? 20 : range === '1W' ? 50 : 100;
         const volatility = range === '1Y' ? 10 : 2;
         let price = 150;

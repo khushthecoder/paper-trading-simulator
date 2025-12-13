@@ -26,6 +26,7 @@ export const getMarketNews = () => api.get('/trade/news/market');
 export const getRecommendations = (symbol) => api.get(`/trade/recommendations/${symbol}`);
 export const registerUser = (data) => api.post('/auth/register', data);
 export const loginUser = (data) => api.post('/auth/login', data);
+export const getMe = () => api.get('/auth/me');
 export const setStopLoss = (symbol, type, value) => api.post('/trade/stop-loss', { symbol, type, value });
 
 export default api;

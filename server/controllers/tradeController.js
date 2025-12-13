@@ -191,7 +191,7 @@ exports.getIndices = async (req, res) => {
 
 exports.getScreeners = async (req, res) => {
     try {
-        const { type } = req.query; // 'gainers', 'losers', 'active'
+        const { type } = req.query; 
         const screeners = await MarketDataService.getScreeners(type);
         res.status(200).json(screeners);
     } catch (error) {
@@ -257,9 +257,6 @@ exports.getRecommendations = async (req, res) => {
 exports.setStopLoss = async (req, res) => {
     try {
         const { symbol, type, value } = req.body;
-        // type: 'price' or 'percent'
-        // value: the number (e.g. 150 or 5)
-
         if (!symbol || !type || !value) {
             return res.status(400).json({ message: 'Missing required fields' });
         }

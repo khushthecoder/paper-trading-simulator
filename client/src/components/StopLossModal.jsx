@@ -3,7 +3,7 @@ import { X, AlertTriangle } from 'lucide-react';
 import { setStopLoss } from '../services/api';
 
 const StopLossModal = ({ symbol, currentPrice, isOpen, onClose, onSuccess }) => {
-    const [type, setType] = useState('price'); // 'price' or 'percent'
+    const [type, setType] = useState('price'); 
     const [value, setValue] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);

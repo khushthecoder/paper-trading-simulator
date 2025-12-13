@@ -7,6 +7,7 @@ import Screeners from './pages/Screeners';
 import NewsPage from './pages/NewsPage';
 import Trade from './pages/Trade';
 import StockDetail from './pages/StockDetail';
+import AuthSuccess from './pages/AuthSuccess';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/news" element={<NewsPage />} />
         <Route path="/trade" element={<Trade />} />
         <Route path="/stock/:symbol" element={<StockDetail />} />
+        <Route path="/auth/success" element={<AuthSuccess />} />
       </Routes>
     </Router>
   );

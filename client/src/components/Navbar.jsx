@@ -69,7 +69,7 @@ const Navbar = () => {
                     </form>
                 </div>
 
-                {/* Right: Profile */}
+
                 <div className="flex items-center gap-6">
                     <button className="text-gray-400 hover:text-white transition-colors relative">
                         <Bell className="w-5 h-5" />

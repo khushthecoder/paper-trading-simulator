@@ -41,7 +41,6 @@ const Dashboard = () => {
                 const { data: indicesData } = await getIndices();
                 setIndices(indicesData);
 
-                // Fetch all categories for the dashboard
                 const [activeRes, gainersRes, losersRes] = await Promise.all([
                     api.get('/trade/movers?type=active'),
                     api.get('/trade/movers?type=gainers'),
@@ -86,7 +85,6 @@ const Dashboard = () => {
 
             <div className="max-w-[1400px] mx-auto px-6 py-8">
 
-                {/* Indices Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     {indices.map((idx, i) => (
                         <a href={`/stock/${idx.symbol}`} key={i} className="bg-[#1E222D] border border-[#2A2E39] p-5 rounded-xl flex justify-between items-center hover:border-gray-600 transition-colors cursor-pointer group">
@@ -104,9 +102,7 @@ const Dashboard = () => {
                 <div className="grid grid-cols-12 gap-8">
                     <div className="col-span-12 lg:col-span-8 space-y-2">
 
-                        {/* Portfolio Summary */}
                         <div className="bg-gradient-to-r from-[#1E222D] to-[#202A36] border border-[#2A2E39] rounded-xl p-8 flex justify-between items-center shadow-lg relative overflow-hidden mb-8">
-                            {/* ... existing portfolio UI ... */}
                             <div className="relative z-10">
                                 <p className="text-gray-400 mb-2 font-medium flex items-center gap-2"><BriefcaseIcon className="w-4 h-4" /> Total Portfolio Value</p>
                                 <h1 className="text-4xl font-bold text-white mb-2">${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h1>
@@ -124,12 +120,10 @@ const Dashboard = () => {
                             </div>
                         </div>
 
-                        {/* Expanded Market Sections */}
                         <StockRow title="Trending (Most Active)" icon={Activity} data={trending} color="text-yellow-500" />
                         <StockRow title="Top Gainers" icon={TrendingUp} data={gainers} color="text-primary" />
                         <StockRow title="Top Losers" icon={ArrowUpRight} data={losers} color="text-accent" />
 
-                        {/* Holdings Summary */}
                         <section className="bg-[#1E222D] border border-[#2A2E39] rounded-xl overflow-hidden mt-8">
                             <div className="p-6 border-b border-[#2A2E39]">
                                 <h2 className="text-lg font-bold text-white">Your Holdings</h2>
@@ -191,25 +185,7 @@ const Dashboard = () => {
 
                     <div className="col-span-12 lg:col-span-4 space-y-8">
                         <MarketNews />
-                        {/* AI Sentiment Box same as before */}
-                        <div className="bg-[#1E222D] border border-[#2A2E39] rounded-xl p-6">
-                            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                <svg className="w-5 h-5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                                AI Market Sentiment
-                            </h2>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-gray-400">Overall Mood</span>
-                                <span className="text-primary font-bold">Bullish</span>
-                            </div>
-                            <div className="w-full bg-[#131722] rounded-full h-2 mb-6">
-                                <div className="bg-primary h-2 rounded-full w-[75%] shadow-[0_0_10px_rgba(0,227,150,0.5)]"></div>
-                            </div>
-                            <p className="text-xs text-gray-500 leading-relaxed">
-                                AI analysis of news headlines suggests strong buying pressure in the Tech sector. Focus on NASDAQ tickers.
-                            </p>
-                        </div>
+
                     </div>
                 </div>
             </div>
