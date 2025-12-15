@@ -33,10 +33,9 @@ app.use('/api/profile', require('./routes/profileRoutes'));
 
 const PORT = process.env.PORT || 5001;
 
-const StopLossService = require('./services/stopLossService');
+// Only listen if distinct from Vercel environment to allow local dev
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
 
-setInterval(() => {
-    StopLossService.checkStopLosses();
-}, 10000);
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+module.exports = app;
