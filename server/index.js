@@ -32,8 +32,9 @@ app.use(passport.session());
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/trade', require('./routes/trade'));
+app.use('/api/profile', require('./routes/profileRoutes'));
 
-const PORT = process.env.PORT || 5000;
+const PORT = 5002; // process.env.PORT || 5000;
 
 const StopLossService = require('./services/stopLossService');
 

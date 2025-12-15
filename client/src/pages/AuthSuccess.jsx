@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getMe } from '../services/api'; 
+import { getMe } from '../services/api';
 
 const AuthSuccess = () => {
     const [searchParams] = useSearchParams();
@@ -16,8 +16,11 @@ const AuthSuccess = () => {
                     localStorage.setItem('token', token);
 
                     const { data } = await getMe();
-                    login({ ...data, token }); 
-                    navigate('/dashboard');
+
+                    if (data) {
+                        login({ ...data, token });
+                        navigate('/dashboard');
+                    }
                 } catch (error) {
                     console.error('Failed to fetch user', error);
                     navigate('/login');

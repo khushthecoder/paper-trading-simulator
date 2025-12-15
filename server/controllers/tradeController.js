@@ -5,16 +5,21 @@ const MarketDataService = require('../services/marketData');
 
 exports.buyStock = async (req, res) => {
     try {
-        const { symbol, quantity } = req.body;
+        const { symbol, quantity, tpin } = req.body;
         const qty = Number(quantity);
 
-        if (!symbol || !qty || qty <= 0) {
-            return res.status(400).json({ message: 'Please provide a valid symbol and quantity' });
+        if (!symbol || !qty || qty <= 0 || !tpin) {
+            return res.status(400).json({ message: 'Please provide symbol, quantity, and TPIN' });
+        }
+
+        const user = await User.findById(req.user._id).select('+tpin');
+
+        if (!(await user.matchTpin(tpin))) {
+            return res.status(401).json({ message: 'Invalid TPIN' });
         }
 
         const price = await MarketDataService.getRealTimePrice(symbol);
         const cost = price * qty;
-        const user = await User.findById(req.user._id);
 
         if (user.balance < cost) {
             return res.status(400).json({ message: 'Insufficient funds' });
@@ -60,11 +65,17 @@ exports.buyStock = async (req, res) => {
 
 exports.sellStock = async (req, res) => {
     try {
-        const { symbol, quantity } = req.body;
+        const { symbol, quantity, tpin } = req.body;
         const qty = Number(quantity);
 
-        if (!symbol || !qty || qty <= 0) {
-            return res.status(400).json({ message: 'Please provide a valid symbol and quantity' });
+        if (!symbol || !qty || qty <= 0 || !tpin) {
+            return res.status(400).json({ message: 'Please provide symbol, quantity, and TPIN' });
+        }
+
+        const user = await User.findById(req.user._id).select('+tpin');
+
+        if (!(await user.matchTpin(tpin))) {
+            return res.status(401).json({ message: 'Invalid TPIN' });
         }
 
         const portfolioItem = await Portfolio.findOne({ user: req.user._id, symbol: symbol.toUpperCase() });
@@ -75,7 +86,6 @@ exports.sellStock = async (req, res) => {
 
         const price = await MarketDataService.getRealTimePrice(symbol);
         const gain = price * qty;
-        const user = await User.findById(req.user._id);
 
         user.balance += gain;
         await user.save();

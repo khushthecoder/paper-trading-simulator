@@ -97,12 +97,15 @@ const Navbar = () => {
 
                     <div className="flex items-center gap-3 cursor-pointer group relative">
                         <div className="text-right hidden md:block">
-                            <p className="text-sm font-medium text-text">{user.username}</p>
+                            <p className="text-sm font-bold text-text">{user?.username || 'Guest'}</p>
                             <p className="text-xs text-primary">Pro Account</p>
                         </div>
-                        <div className="w-9 h-9 rounded bg-card border border-border flex items-center justify-center text-primary font-bold">
-                            {user.username[0].toUpperCase()}
-                        </div>
+                        <button
+                            onClick={() => navigate('/profile')}
+                            className="w-10 h-10 rounded-lg bg-surface border border-border flex items-center justify-center text-primary font-bold hover:bg-background transition-colors"
+                        >
+                            {user?.username?.[0]?.toUpperCase() || 'U'}
+                        </button>
 
                         <div className="absolute right-0 top-full mt-2 w-48 bg-surface rounded-lg shadow-xl border border-border py-1 hidden group-hover:block">
                             <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-muted hover:text-text hover:bg-background flex items-center gap-2">
