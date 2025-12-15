@@ -4,11 +4,11 @@ import Navbar from '../components/Navbar';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import api, { getStockPrice, getStockCandles, getCompanyProfile, getFinancials, getRecommendations, getCompanyNews } from '../services/api';
 import { BadgeCheck, Globe, TrendingUp, DollarSign } from 'lucide-react';
+import TpinModal from '../components/TpinModal';
 
 const StockDetail = () => {
     const { symbol } = useParams();
     const navigate = useNavigate();
-
 
     const [price, setPrice] = useState(null);
     const [profile, setProfile] = useState(null);
@@ -17,16 +17,15 @@ const StockDetail = () => {
     const [recommendations, setRecommendations] = useState([]);
     const [news, setNews] = useState([]);
 
-
     const [activeTab, setActiveTab] = useState('Overview');
     const [timeRange, setTimeRange] = useState('1D');
     const [quantity, setQuantity] = useState('');
     const [orderType, setOrderType] = useState('BUY');
+    const [showTpinModal, setShowTpinModal] = useState(false);
 
     useEffect(() => {
         const fetchAllData = async () => {
             try {
-
                 const [priceRes, profileRes, recsRes, newsRes] = await Promise.all([
                     getStockPrice(symbol),
                     getCompanyProfile(symbol),
@@ -39,10 +38,8 @@ const StockDetail = () => {
                 setRecommendations(recsRes.data);
                 setNews(newsRes.data);
 
-
                 const candles = await getStockCandles(symbol, timeRange);
                 setChartData(candles.data);
-
 
                 const fins = await getFinancials(symbol);
                 setFinancials(fins.data.metric);
@@ -54,15 +51,23 @@ const StockDetail = () => {
         fetchAllData();
     }, [symbol, timeRange]);
 
-    const handleTrade = async (e) => {
+    const handleTradeClick = (e) => {
         e.preventDefault();
+        if (!quantity || quantity <= 0) {
+            alert('Please enter a valid quantity');
+            return;
+        }
+        setShowTpinModal(true);
+    };
+
+    const handleTpinVerify = async (tpin) => {
         try {
             const endpoint = `/trade/${orderType.toLowerCase()}`;
-            await api.post(endpoint, { symbol, quantity });
+            await api.post(endpoint, { symbol, quantity, tpin });
             alert('Order Executed Successfully!');
             navigate('/dashboard');
         } catch (error) {
-            alert(error.response?.data?.message || 'Trade Failed');
+            throw error; // Let modal handle error display
         }
     };
 
@@ -72,6 +77,15 @@ const StockDetail = () => {
 
     return (
         <div className="min-h-screen bg-background text-text font-sans pb-20">
+            <TpinModal
+                isOpen={showTpinModal}
+                onClose={() => setShowTpinModal(false)}
+                onVerify={handleTpinVerify}
+                type={orderType}
+                symbol={symbol}
+                quantity={quantity}
+                price={price}
+            />
             <Navbar />
 
 
@@ -211,7 +225,7 @@ const StockDetail = () => {
                             <button onClick={() => setOrderType('BUY')} className={`flex-1 py-2 text-sm font-bold rounded ${orderType === 'BUY' ? 'bg-primary text-black' : 'text-muted hover:text-text'}`}>Buy</button>
                             <button onClick={() => setOrderType('SELL')} className={`flex-1 py-2 text-sm font-bold rounded ${orderType === 'SELL' ? 'bg-accent text-white' : 'text-muted hover:text-text'}`}>Sell</button>
                         </div>
-                        <form onSubmit={handleTrade} className="space-y-4">
+                        <form onSubmit={handleTradeClick} className="space-y-4">
                             <div>
                                 <label className="text-xs text-muted mb-1 block">Quantity</label>
                                 <input
