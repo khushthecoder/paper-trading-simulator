@@ -1,8 +1,8 @@
-# 📈 Zero Cost Paper Trading Simulator
+# Zero Cost Paper Trading Simulator
 
 A full-stack "Paper Trading" application where users can simulate buying and selling stocks with virtual currency using real-time market data.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 **Frontend:**
 - React (Vite)
@@ -32,7 +32,7 @@ A full-stack "Paper Trading" application where users can simulate buying and sel
 └── vercel.json       # Vercel deployment configuration
 ```
 
-## 🏃‍♀️ How to Run
+##  How to Run
 
 ### 1. Setup
 Run the following command in the root directory to install all dependencies:
